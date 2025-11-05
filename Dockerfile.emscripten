@@ -1,0 +1,31 @@
+# ---- Stage 1: Build with Emscripten ----
+FROM --platform=linux/arm64/v8 emscripten/emsdk:4.0.19 AS builder
+
+# ソースをコピー
+WORKDIR /app
+COPY src ./src
+
+# 出力先ディレクトリ
+RUN mkdir -p /out
+
+# C++ -> WASM (ES Modules形式で出力)
+RUN emcc src/add.cpp \
+    -O3 \
+    -s WASM=1 \
+    -s MODULARIZE=1 \
+    -s EXPORT_ES6=1 \
+    -s ENVIRONMENT='web' \
+    -lembind \
+    -o /out/add.js
+
+# ---- Stage 2: 軽量HTTPサーバー ----
+FROM python:3.11-slim
+
+# # HTMLとビルド済みWASMをコピー
+WORKDIR /app
+COPY index.html /app/
+COPY --from=builder /out /app/
+
+# # ポート8000で提供
+EXPOSE 8000
+CMD ["python3", "-m", "http.server", "8000"]

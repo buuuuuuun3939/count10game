@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>WASM ES Module Test</title>
+</head>
+<body>
+  <h1>WASM ES Module Test</h1>
+  <script type="module">
+    import createModule from './add.js';
+    const Module = await createModule();
+    console.log("add(5, 7) =", Module.add(5, 7));
+    document.body.insertAdjacentHTML('beforeend', `<p>add(5, 7) = ${Module.add(5, 7)}</p>`);
+  </script>
+</body>
+</html>
