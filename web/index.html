@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>10秒チャレンジ</title>
+</head>
+<body>
+  <h1>10秒チャレンジ</h1>
+  <button id="start">スタート</button>
+  <button id="stop" disabled>ストップ</button>
+  <p id="result"></p>
+  <h2>ランキング</h2>
+  <ul id="ranking"></ul>
+
+  <script type="module">
+    let startTime = 0;
+
+    document.getElementById("start").onclick = () => {
+      startTime = performance.now();
+      document.getElementById("start").disabled = true;
+      document.getElementById("stop").disabled = false;
+    };
+
+    document.getElementById("stop").onclick = async () => {
+      const diff = Math.abs(performance.now() - startTime - 10000);
+      document.getElementById("result").textContent = `誤差: ${diff.toFixed(2)}ms`;
+
+      const name = prompt("名前を入力してください:");
+      await fetch("http://localhost:8000/api/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, diff_ms: diff })
+      });
+
+      document.getElementById("start").disabled = false;
+      document.getElementById("stop").disabled = true;
+      loadRanking();
+    };
+
+    async function loadRanking() {
+      const res = await fetch("http://localhost:8000/api/top10");
+      const data = await res.json();
+      const list = document.getElementById("ranking");
+      list.innerHTML = "";
+      data.forEach((r, i) => {
+        const li = document.createElement("li");
+        li.textContent = `${i+1}. ${r.name} - ${r.diff_ms.toFixed(2)}ms`;
+        list.appendChild(li);
+      });
+    }
+
+    loadRanking();
+  </script>
+</body>
+</html>
