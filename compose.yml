@@ -5,13 +5,17 @@ services:
     image: postgres:16
     container_name: wasm_pg
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: wasmdb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
+    networks:
+      - wasm_net
     volumes:
       - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env
 
   api:
     build: ./api
@@ -19,9 +23,15 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgres://wasmuser:wasmpass@db:5432/wasmdb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "8000:8000"
+    networks:
+      - wasm_net
+    env_file:
+      - .env
 
   web:
     build: ./web
@@ -30,6 +40,11 @@ services:
       - api
     ports:
       - "8080:8000"
-
+    networks:
+      - wasm_net
 volumes:
   pgdata:
+
+networks:
+  wasm_net:
+    driver: bridge

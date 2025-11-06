@@ -5,8 +5,15 @@ import os
 
 
 app = Flask(__name__)
+
 CORS(app, resources={r"/api/*": {"origins": "*"}})
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:postgres@db:5432/postgres"
+
+db_url = os.getenv("DATABASE_URL")
+if not db_url:
+    raise RuntimeError("DATABASE_URL is not set!")
+print("Connecting to DB:", db_url)
+app.config["SQLALCHEMY_DATABASE_URI"] = db_url
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 class Score(db.Model):
