@@ -12,4 +12,10 @@ done
 echo "Database ready! 🚀"
 
 # アプリ起動
-exec gunicorn --bind 0.0.0.0:8000 app:app
+exec gunicorn \
+  -w 4 \
+  --bind 0.0.0.0:8000 \
+  --access-logfile - \
+  --error-logfile - \
+  app:app
+
